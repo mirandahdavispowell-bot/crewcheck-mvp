@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrewCheck - MVP Demo</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            background: #000000;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .nav-menu.open {
+            right: 0;
+        }
+
+        .nav-header {
+            background: #000000;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-header h2 {
+            font-size: 20px;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .nav-items {
+            padding: 20px;
+        }
+
+        .nav-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #FF6B35;
+            color: white;
+        }
+
+        .nav-item.current {
+            background: #F7B801;
+            border-left: 4px solid #FF6B35;
+        }
+
+        /* Time Badge */
+        .time-badge {
+            background: #F7B801;
+            color: #000000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 20px;
+        }
+
+        .screen-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+
+        .screen-subtitle {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 24px;
+        }
+
+        /* Card Components */
+        .card {
+            background: white;
+            border: 2px solid #000000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card.highlight {
+            border-color: #FF6B35;
+            background: #FFF5F0;
+        }
+
+        .card.warning {
+            border-color: #F7B801;
+            background: #FFFEF0;
+        }
+
+        /* Buttons */
+        .button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+
+        .button:hover {
+            background: #E55A2B;
+            transform: translateY(-2px);
+        }
+
+        .button.secondary {
+            background: #F7B801;
+            color: #000000;
+        }
+
+        .button.secondary:hover {
+            background: #DDA501;
+        }
+
+        .button.outline {
+            background: white;
+            color: #000000;
+            border: 2px solid #000000;
+        }
+
+        .button.outline:hover {
+            background: #f5f5f5;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            border: 2px solid #000000;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #FF6B35;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666666;
+            margin-top: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B35, #F7B801);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* Team Member List */
+        .team-list {
+            margin: 20px 0;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .team-member.you {
+            background: #FFF5F0;
+            border: 2px solid #FF6B35;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FF6B35;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .team-member-info {
+            flex: 1;
+        }
+
+        .team-member-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .team-member-role {
+            font-size: 13px;
+            color: #666666;
+        }
+
+        .check-icon {
+            color: #4CAF50;
+            font-size: 24px;
+        }
+
+        /* Breathing Exercise */
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35, #F7B801);
+            margin: 40px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Heat Map */
+        .heat-map {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .heat-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .heat-green { background: #4CAF50; }
+        .heat-yellow { background: #F7B801; color: #000; }
+        .heat-orange { background: #FF9800; }
+        .heat-red { background: #F44336; }
+
+        /* Badges */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .badge.earned {
+            border-color: #FF6B35;
+            background: #FFF5F0;
+        }
+
+        .badge-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .badge-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            background: #FF6B35;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        /* Points Display */
+        .points-display {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #000000;
+            color: #F7B801;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 800;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Crew data
+        const crewMembers = [
+            { id: 1, name: "Alex Rivera", role: "Steel Worker", initials: "AR", isYou: true },
+            { id: 2, name: "Marcus Chen", role: "Senior Foreman", initials: "MC", isBuddy: true },
+            { id: 3, name: "Jordan Hayes", role: "Steel Worker", initials: "JH" },
+            { id: 4, name: "Taylor Brooks", role: "Welder", initials: "TB" },
+            { id: 5, name: "Sam Martinez", role: "Steel Worker", initials: "SM" },
+            { id: 6, name: "Casey O'Brien", role: "Rigger", initials: "CO" },
+            { id: 7, name: "Jamie Wilson", role: "Steel Worker", initials: "JW" },
+            { id: 8, name: "Riley Kim", role: "Apprentice", initials: "RK" }
+        ];
+
+        // Time progression scenarios
+        const scenarios = [
+            { id: 'warmup', time: '6:00 AM', title: 'Morning Crew Warm-up', type: 'team' },
+            { id: 'stress', time: '9:45 AM', title: 'Stress Alert Detected', type: 'personal' },
+            { id: 'buddy', time: '12:30 PM', title: 'Buddy Check', type: 'social' },
+            { id: 'heatmap', time: '3:15 PM', title: 'Team Energy Check', type: 'team' },
+            { id: 'summary', time: '5:00 PM', title: 'Shift Complete', type: 'summary' }
+        ];
+
+        function App() {
+            const [currentScenario, setCurrentScenario] = useState(0);
+            const [menuOpen, setMenuOpen] = useState(false);
+            const [points, setPoints] = useState(0);
+            const [scenarioState, setScenarioState] = useState({});
+
+            const scenario = scenarios[currentScenario];
+
+            const nextScenario = () => {
+                if (currentScenario < scenarios.length - 1) {
+                    setCurrentScenario(currentScenario + 1);
+                    setMenuOpen(false);
+                }
+            };
+
+            const jumpToScenario = (index) => {
+                setCurrentScenario(index);
+                setMenuOpen(false);
+            };
+
+            const addPoints = (amount) => {
+                setPoints(points + amount);
+            };
+
+            const updateScenarioState = (key, value) => {
+                setScenarioState({ ...scenarioState, [key]: value });
+            };
+
+            return (
+                <>
+                    <div className="app-container">
+                        <div className="header">
+                            <h1>CrewCheck</h1>
+                            <button className="menu-button" onClick={() => setMenuOpen(true)}>
+                                ☰
+                            </button>
+                        </div>
+
+                        <div className="content">
+                            {scenario.id === 'warmup' && (
+                                <WarmupScreen 
+                                    scenario={scenario} 
+                                    onComplete={() => { addPoints(10); nextScenario(); }}
+                                    state={scenarioState}
+                                    updateState={updateScenarioState}
+                                />
+                            )}
+                            {scenario.id === 'stress' && (
+                                <StressAlertScreen 
+                                    scenario={scenario} 
+                                    onComplete={() => { addPoints(10); nextScenario(); }}
+                                    state={scenarioState}
+                                    updateState={updateScenarioState}
+                                />
+                            )}
+                            {scenario.id === 'buddy' && (
+                                <BuddyCheckScreen 
+                                    scenario={scenario} 
+                                    onComplete={() => { addPoints(15); nextScenario(); }}
+                                    state={scenarioState}
+                                    updateState={updateScenarioState}
+                                />
+                            )}
+                            {scenario.id === 'heatmap' && (
+                                <HeatMapScreen 
+                                    scenario={scenario} 
+                                    onComplete={nextScenario}
+                                />
+                            )}
+                            {scenario.id === 'summary' && (
+                                <SummaryScreen 
+                                    scenario={scenario} 
+                                    totalPoints={points}
+                                />
+                            )}
+                        </div>
+
+                        <div className="points-display">
+                            ⭐ {points} pts
+                        </div>
+                    </div>
+
+                    <div className={`overlay ${menuOpen ? 'show' : ''}`} onClick={() => setMenuOpen(false)} />
+                    
+                    <div className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+                        <div className="nav-header">
+                            <h2>Jump To...</h2>
+                            <button className="close-button" onClick={() => setMenuOpen(false)}>×</button>
+                        </div>
+                        <div className="nav-items">
+                            {scenarios.map((s, index) => (
+                                <button 
+                                    key={s.id}
+                                    className={`nav-item ${index === currentScenario ? 'current' : ''}`}
+                                    onClick={() => jumpToScenario(index)}
+                                >
+                                    <div style={{fontSize: '12px', color: '#666', marginBottom: '4px'}}>{s.time}</div>
+                                    <div>{s.title}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function WarmupScreen({ scenario, onComplete, state, updateState }) {
+            const [started, setStarted] = useState(false);
+            const [countdown, setCountdown] = useState(60);
+            const [completedMembers, setCompletedMembers] = useState([1]); // You complete first
+
+            useEffect(() => {
+                if (started && countdown > 0) {
+                    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+                    
+                    // Simulate other crew members completing
+                    if (countdown === 45) setCompletedMembers([1, 2, 3]);
+                    if (countdown === 30) setCompletedMembers([1, 2, 3, 4, 5]);
+                    if (countdown === 15) setCompletedMembers([1, 2, 3, 4, 5, 6, 7]);
+                    if (countdown === 5) setCompletedMembers([1, 2, 3, 4, 5, 6, 7, 8]);
+                    
+                    return () => clearTimeout(timer);
+                }
+            }, [started, countdown]);
+
+            if (started && countdown === 0) {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">🎉 Great Work!</h2>
+                        <p className="screen-subtitle">All 8 crew members completed the warm-up</p>
+
+                        <div className="card highlight">
+                            <h3 style={{fontSize: '20px', marginBottom: '16px'}}>Team Points Earned</h3>
+                            <div style={{fontSize: '48px', fontWeight: '800', color: '#FF6B35', textAlign: 'center'}}>
+                                +80
+                            </div>
+                            <p style={{textAlign: 'center', marginTop: '8px', color: '#666'}}>
+                                10 points per crew member
+                            </p>
+                        </div>
+
+                        <div className="team-list">
+                            {crewMembers.map(member => (
+                                <div key={member.id} className={`team-member ${member.isYou ? 'you' : ''}`}>
+                                    <div className="avatar">{member.initials}</div>
+                                    <div className="team-member-info">
+                                        <div className="team-member-name">
+                                            {member.name} {member.isYou && '(You)'}
+                                        </div>
+                                        <div className="team-member-role">{member.role}</div>
+                                    </div>
+                                    <span className="check-icon">✓</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button className="button" onClick={onComplete}>
+                            Continue to Work →
+                        </button>
+                    </div>
+                );
+            }
+
+            if (started) {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">Shift Warm-Up</h2>
+                        <p className="screen-subtitle">Follow the breathing guide</p>
+
+                        <div className="breathing-circle">
+                            {countdown > 30 ? 'Breathe In' : 'Breathe Out'}
+                        </div>
+
+                        <div className="card">
+                            <div className="progress-label">
+                                <span>Progress</span>
+                                <span>{60 - countdown}s / 60s</span>
+                            </div>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${((60 - countdown) / 60) * 100}%`}} />
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{marginBottom: '12px'}}>Crew Progress</h3>
+                            <p style={{color: '#666', fontSize: '14px', marginBottom: '8px'}}>
+                                {completedMembers.length} / 8 members completed
+                            </p>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${(completedMembers.length / 8) * 100}%`}} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🌅 Morning Crew Warm-Up</h2>
+                    <p className="screen-subtitle">Steel Crew B - Site 14</p>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '20px', marginBottom: '12px'}}>Daily Team Challenge</h3>
+                        <p style={{marginBottom: '16px'}}>
+                            Complete a 60-second guided breathing + stretch routine with your crew.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', marginBottom: '16px'}}>
+                            <strong>Reward:</strong> 10 Crew Points per member
+                        </div>
+                        <p style={{fontSize: '14px', color: '#666'}}>
+                            This helps the team start the day focused and reduces early-shift injuries.
+                        </p>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <span className="stat-value">8</span>
+                            <span className="stat-label">Crew Members</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-value">60s</span>
+                            <span className="stat-label">Duration</span>
+                        </div>
+                    </div>
+
+                    <button className="button" onClick={() => setStarted(true)}>
+                        Start Warm-Up
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Skip (No Points)
+                    </button>
+                </div>
+            );
+        }
+
+        function StressAlertScreen({ scenario, onComplete, state, updateState }) {
+            const [step, setStep] = useState('alert'); // alert, reset, complete
+
+            if (step === 'complete') {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">✨ Nice Work</h2>
+                        <p className="screen-subtitle">Your stress markers have improved</p>
+
+                        <div className="card highlight">
+                            <h3 style={{fontSize: '18px', marginBottom: '16px'}}>Recovery Data</h3>
+                            <div className="stats-grid">
+                                <div className="stat-card">
+                                    <span className="stat-value" style={{fontSize: '24px'}}>+12%</span>
+                                    <span className="stat-label">HRV Increase</span>
+                                </div>
+                                <div className="stat-card">
+                                    <span className="stat-value" style={{fontSize: '24px'}}>-8 bpm</span>
+                                    <span className="stat-label">Heart Rate</span>
+                                </div>
+                            </div>
+                            <div style={{marginTop: '16px', padding: '12px', background: 'white', borderRadius: '8px'}}>
+                                <strong>Points Earned: +10</strong>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '16px', marginBottom: '8px'}}>💡 Pro Tip</h3>
+                            <p style={{fontSize: '14px'}}>
+                                Catching stress early prevents it from building up over your shift. 
+                                You just saved yourself from afternoon fatigue.
+                            </p>
+                        </div>
+
+                        <button className="button" onClick={onComplete}>
+                            Back to Work →
+                        </button>
+                    </div>
+                );
+            }
+
+            if (step === 'reset') {
+                const [countdown, setCountdown] = useState(90);
+
+                useEffect(() => {
+                    if (countdown > 0) {
+                        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+                        return () => clearTimeout(timer);
+                    } else {
+                        setTimeout(() => setStep('complete'), 500);
+                    }
+                }, [countdown]);
+
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">90-Second Reset</h2>
+                        <p className="screen-subtitle">Follow your watch's haptic cues</p>
+
+                        <div className="breathing-circle">
+                            {countdown > 60 ? 'Breathe In' : countdown > 30 ? 'Breathe Out' : 'Almost There'}
+                        </div>
+
+                        <div className="card">
+                            <div className="progress-label">
+                                <span>Reset Progress</span>
+                                <span>{90 - countdown}s / 90s</span>
+                            </div>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${((90 - countdown) / 90) * 100}%`}} />
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '16px', marginBottom: '8px'}}>Real-time Feedback</h3>
+                            <p style={{fontSize: '14px', color: '#666'}}>
+                                {countdown > 60 ? '📊 HRV beginning to stabilize...' : 
+                                 countdown > 30 ? '✓ Heart rate decreasing' : 
+                                 '🎯 Stress markers improving!'}
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">⚠️ Stress Alert</h2>
+                    <p className="screen-subtitle">Your body is showing signs of strain</p>
+
+                    <div className="card warning">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>What We Detected</h3>
+                        <div style={{fontSize: '14px', lineHeight: '1.8'}}>
+                            <div>• Heart rate elevated for 12 minutes</div>
+                            <div>• HRV dropped 18% below your baseline</div>
+                            <div>• Low movement detected (not exertion)</div>
+                        </div>
+                        <div style={{marginTop: '16px', padding: '12px', background: 'white', borderRadius: '8px', fontSize: '14px'}}>
+                            <strong>Translation:</strong> Your body is stressed, not just working hard.
+                        </div>
+                    </div>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '18px', marginBottom: '8px'}}>Quick Fix Available</h3>
+                        <p style={{fontSize: '14px', marginBottom: '12px'}}>
+                            A 90-second breathing reset can help clear your head and reduce strain.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px'}}>
+                            <strong>Reward:</strong> 10 Points + Improved focus
+                        </div>
+                    </div>
+
+                    <button className="button" onClick={() => setStep('reset')}>
+                        Start 90-Second Reset
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Not Now
+                    </button>
+
+                    <p style={{fontSize: '12px', color: '#666', marginTop: '16px', textAlign: 'center'}}>
+                        This data is private. Only you can see it.
+                    </p>
+                </div>
+            );
+        }
+
+        function BuddyCheckScreen({ scenario, onComplete, state, updateState }) {
+            const [responded, setResponded] = useState(false);
+
+            if (responded) {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">👊 Nice Move</h2>
+                        <p className="screen-subtitle">Your buddy appreciated the check-in</p>
+
+                        <div className="card highlight">
+                            <div style={{textAlign: 'center', fontSize: '48px', marginBottom: '16px'}}>☕</div>
+                            <h3 style={{fontSize: '20px', textAlign: 'center', marginBottom: '12px'}}>
+                                Coffee sent to Marcus
+                            </h3>
+                            <p style={{textAlign: 'center', fontSize: '14px', color: '#666'}}>
+                                He'll grab it during the next break
+                            </p>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Rescue Points Earned</h3>
+                            <div style={{fontSize: '48px', fontWeight: '800', color: '#FF6B35', textAlign: 'center', marginBottom: '8px'}}>
+                                +15
+                            </div>
+                            <p style={{textAlign: 'center', fontSize: '14px', color: '#666'}}>
+                                You've earned 45 Rescue Points this week
+                            </p>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '16px', marginBottom: '8px'}}>💬 Marcus replied:</h3>
+                            <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '14px', fontStyle: 'italic'}}>
+                                "Thanks man, needed that. Rough morning but I'm good now 👍"
+                            </div>
+                        </div>
+
+                        <button className="button" onClick={onComplete}>
+                            Continue Shift →
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🤝 Buddy Check</h2>
+                    <p className="screen-subtitle">Your buddy might need support</p>
+
+                    <div className="card warning">
+                        <div style={{display: 'flex', alignItems: 'center', marginBottom: '16px'}}>
+                            <div className="avatar" style={{marginRight: '12px'}}>MC</div>
+                            <div>
+                                <div style={{fontWeight: '700', fontSize: '18px'}}>Marcus Chen</div>
+                                <div style={{fontSize: '14px', color: '#666'}}>Senior Foreman</div>
+                            </div>
+                        </div>
+                        <p style={{fontSize: '14px', marginBottom: '16px'}}>
+                            Marcus's stress markers have been elevated for a while. As his buddy, 
+                            you can check in with a simple gesture.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '13px'}}>
+                            <strong>Note:</strong> You won't see his health data. This is just a friendly nudge.
+                        </div>
+                    </div>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>One-Tap Actions</h3>
+                        <p style={{fontSize: '14px', marginBottom: '16px'}}>
+                            Pick what feels right. All options earn Rescue Points.
+                        </p>
+                    </div>
+
+                    <button className="button" onClick={() => setResponded(true)}>
+                        ☕ Send Coffee (Quick)
+                    </button>
+
+                    <button className="button secondary" onClick={() => setResponded(true)}>
+                        📱 Give Him a Call
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Not Right Now
+                    </button>
+
+                    <p style={{fontSize: '12px', color: '#666', marginTop: '16px', textAlign: 'center'}}>
+                        Crew members help 3.2x more when prompted with buddy checks
+                    </p>
+                </div>
+            );
+        }
+
+        function HeatMapScreen({ scenario, onComplete }) {
+            const heatData = [
+                { initials: 'AR', status: 'green', name: 'Alex (You)' },
+                { initials: 'MC', status: 'yellow', name: 'Marcus' },
+                { initials: 'JH', status: 'green', name: 'Jordan' },
+                { initials: 'TB', status: 'yellow', name: 'Taylor' },
+                { initials: 'SM', status: 'yellow', name: 'Sam' },
+                { initials: 'CO', status: 'green', name: 'Casey' },
+                { initials: 'JW', status: 'yellow', name: 'Jamie' },
+                { initials: 'RK', status: 'green', name: 'Riley' }
+            ];
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">📊 Team Energy Check</h2>
+                    <p className="screen-subtitle">Aggregated crew stress trend</p>
+
+                    <div className="card warning">
+                        <h3 style={{fontSize: '20px', marginBottom: '12px'}}>⚠️ Team Energy Dipping</h3>
+                        <p style={{marginBottom: '16px'}}>
+                            Aggregate stress levels are trending yellow. Consider a short break 
+                            to help the crew reset before the afternoon push.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '14px'}}>
+                            <strong>Suggestion:</strong> 10-minute crew break now = better productivity later
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '16px'}}>Crew Status (Anonymized)</h3>
+                        <div className="heat-map">
+                            {heatData.map((member, i) => (
+                                <div key={i} className={`heat-cell heat-${member.status}`}>
+                                    {member.initials}
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{marginTop: '16px', fontSize: '13px'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                                <span>🟢 Green: Doing well</span>
+                                <span>4 members</span>
+                            </div>
+                            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                <span>🟡 Yellow: Elevated stress</span>
+                                <span>4 members</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>🔒 Privacy Note</h3>
+                        <p style={{fontSize: '14px', color: '#666'}}>
+                            No names are shown without individual opt-in. Managers only see aggregate 
+                            trends to make tactical decisions about breaks and rotation.
+                        </p>
+                    </div>
+
+                    <button className="button" onClick={onComplete}>
+                        Suggest Team Break (+ 5 Crew Points)
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Continue Without Break
+                    </button>
+                </div>
+            );
+        }
+
+        function SummaryScreen({ scenario, totalPoints }) {
+            const badges = [
+                { icon: '🎯', name: 'First Responder', earned: true },
+                { icon: '🔥', name: 'Steady Hands', earned: true },
+                { icon: '💪', name: '3-Day Streak', earned: false },
+                { icon: '⭐', name: 'Safety MVP', earned: false },
+                { icon: '🏆', name: 'Team Player', earned: true },
+                { icon: '🌟', name: 'Night Owl', earned: false }
+            ];
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🎉 Shift Complete!</h2>
+                    <p className="screen-subtitle">Great work today, Alex</p>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '20px', textAlign: 'center', marginBottom: '8px'}}>
+                            Total Points Today
+                        </h3>
+                        <div style={{fontSize: '64px', fontWeight: '800', color: '#FF6B35', textAlign: 'center', marginBottom: '8px'}}>
+                            {totalPoints}
+                        </div>
+                        <p style={{textAlign: 'center', fontSize: '14px', color: '#666'}}>
+                            You're ranked #2 on Steel Crew B this week
+                        </p>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <span className="stat-value" style={{fontSize: '28px'}}>2</span>
+                            <span className="stat-label">Resets Completed</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-value" style={{fontSize: '28px'}}>15</span>
+                            <span className="stat-label">Rescue Points</span>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '16px'}}>Badges Earned</h3>
+                        <div className="badges-grid">
+                            {badges.map((badge, i) => (
+                                <div key={i} className={`badge ${badge.earned ? 'earned' : ''}`}>
+                                    <div className="badge-icon">{badge.icon}</div>
+                                    <div className="badge-name">{badge.name}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Weekly Progress</h3>
+                        <div className="progress-label">
+                            <span>Crew Challenge</span>
+                            <span>4 / 5 days</span>
+                        </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{width: '80%'}} />
+                        </div>
+                        <p style={{fontSize: '13px', color: '#666', marginTop: '8px'}}>
+                            Complete tomorrow's warm-up to unlock the Coffee Truck reward! ☕
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>💰 Points Marketplace</h3>
+                        <p style={{fontSize: '14px', marginBottom: '12px'}}>
+                            You have <strong>{totalPoints} points</strong> available to redeem:
+                        </p>
+                        <div style={{fontSize: '14px', lineHeight: '1.8'}}>
+                            <div>• Coffee voucher - 50 points</div>
+                            <div>• Safety gloves upgrade - 100 points</div>
+                            <div>• $10 gift card - 200 points</div>
+                        </div>
+                    </div>
+
+                    <button className="button">
+                        Browse Rewards →
+                    </button>
+
+                    <button className="button secondary" onClick={() => window.location.reload()}>
+                        🔄 Restart Demo
+                    </button>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+
