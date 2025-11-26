@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrewCheck - MVP Demo</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            background: #000000;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .nav-menu.open {
+            right: 0;
+        }
+
+        .nav-header {
+            background: #000000;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-header h2 {
+            font-size: 20px;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .nav-items {
+            padding: 20px;
+        }
+
+        .nav-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #FF6B35;
+            color: white;
+        }
+
+        .nav-item.current {
+            background: #F7B801;
+            border-left: 4px solid #FF6B35;
+        }
+
+        /* Time Badge */
+        .time-badge {
+            background: #F7B801;
+            color: #000000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 20px;
+        }
+
+        .screen-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+
+        .screen-subtitle {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 24px;
+        }
+
+        /* Card Components */
+        .card {
+            background: white;
+            border: 2px solid #000000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card.highlight {
+            border-color: #FF6B35;
+            background: #FFF5F0;
+        }
+
+        .card.warning {
+            border-color: #F7B801;
+            background: #FFFEF0;
+        }
+
+        /* Buttons */
+        .button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+
+        .button:hover {
+            background: #E55A2B;
+            transform: translateY(-2px);
+        }
+
+        .button.secondary {
+            background: #F7B801;
+            color: #000000;
+        }
+
+        .button.secondary:hover {
+            background: #DDA501;
+        }
+
+        .button.outline {
+            background: white;
+            color: #000000;
+            border: 2px solid #000000;
+        }
+
+        .button.outline:hover {
+            background: #f5f5f5;
+        }
+
+        .button.small {
+            padding: 10px 16px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 2px solid #000000;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 36px;
+            font-weight: 800;
+            color: #FF6B35;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 12px;
+            color: #666666;
+            font-weight: 600;
+        }
+
+        /* Breathing Animation */
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            margin: 40px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7B801 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: breathe 12s ease-in-out infinite;
+            box-shadow: 0 10px 40px rgba(255, 107, 53, 0.3);
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            33.33% { transform: scale(1.3); }
+            66.66% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .breathing-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 48px;
+            font-weight: 800;
+            text-align: center;
+            color: #FF6B35;
+            margin: 20px 0;
+        }
+
+        /* Heat Map */
+        .heat-map {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .heat-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px;
+            border: 2px solid #000000;
+        }
+
+        .heat-green {
+            background: #90EE90;
+            color: #000000;
+        }
+
+        .heat-yellow {
+            background: #F7B801;
+            color: #000000;
+        }
+
+        .heat-red {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* Badges */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .badge {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            background: #f5f5f5;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .badge.earned {
+            border-color: #FF6B35;
+            background: white;
+            opacity: 1;
+        }
+
+        .badge-icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+
+        .badge-name {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Progress Bar */
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B35 0%, #F7B801 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7B801 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* Privacy Badge */
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const scenarios = [
+            { id: 'start', time: '6:00 AM', title: 'Shift Start' },
+            { id: 'warmup', time: '6:05 AM', title: 'Morning Warm-Up' },
+            { id: 'stress', time: '10:30 AM', title: 'Stress Alert' },
+            { id: 'breathing', time: '10:31 AM', title: '90-Second Reset' },
+            { id: 'buddy', time: '2:15 PM', title: 'Buddy Check' },
+            { id: 'heatmap', time: '2:45 PM', title: 'Team Energy' },
+            { id: 'summary', time: '5:00 PM', title: 'Shift Summary' }
+        ];
+
+        function App() {
+            const [currentScenario, setCurrentScenario] = useState(0);
+            const [menuOpen, setMenuOpen] = useState(false);
+            const [totalPoints, setTotalPoints] = useState(45);
+
+            const goToScenario = (index) => {
+                setCurrentScenario(index);
+                setMenuOpen(false);
+            };
+
+            const handleComplete = (points = 0) => {
+                setTotalPoints(prev => prev + points);
+                if (currentScenario < scenarios.length - 1) {
+                    setCurrentScenario(currentScenario + 1);
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    <div className={`overlay ${menuOpen ? 'show' : ''}`} onClick={() => setMenuOpen(false)} />
+                    
+                    <header className="header">
+                        <h1>CrewCheck</h1>
+                        <button className="menu-button" onClick={() => setMenuOpen(true)}>☰</button>
+                    </header>
+
+                    <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+                        <div className="nav-header">
+                            <h2>Jump to Scene</h2>
+                            <button className="close-button" onClick={() => setMenuOpen(false)}>×</button>
+                        </div>
+                        <div className="nav-items">
+                            {scenarios.map((scenario, index) => (
+                                <button
+                                    key={scenario.id}
+                                    className={`nav-item ${index === currentScenario ? 'current' : ''}`}
+                                    onClick={() => goToScenario(index)}
+                                >
+                                    {scenario.time} - {scenario.title}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+
+                    <main className="content">
+                        {currentScenario === 0 && <StartScreen scenario={scenarios[0]} onComplete={handleComplete} />}
+                        {currentScenario === 1 && <WarmUpScreen scenario={scenarios[1]} onComplete={handleComplete} />}
+                        {currentScenario === 2 && <StressAlertScreen scenario={scenarios[2]} onComplete={handleComplete} />}
+                        {currentScenario === 3 && <BreathingScreen scenario={scenarios[3]} onComplete={handleComplete} />}
+                        {currentScenario === 4 && <BuddyCheckScreen scenario={scenarios[4]} onComplete={handleComplete} />}
+                        {currentScenario === 5 && <HeatMapScreen scenario={scenarios[5]} onComplete={handleComplete} />}
+                        {currentScenario === 6 && <SummaryScreen scenario={scenarios[6]} totalPoints={totalPoints} />}
+                    </main>
+                </div>
+            );
+        }
+
+        function StartScreen({ scenario, onComplete }) {
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">👋 Good Morning, Alex</h2>
+                    <p className="screen-subtitle">Steel Crew B • Site: Industrial Park Phase 2</p>
+
+                    <div className="privacy-badge">
+                        🔒 Your data stays private
+                    </div>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '20px', marginBottom: '12px'}}>Today's Shift</h3>
+                        <p style={{marginBottom: '16px'}}>
+                            8-hour day with structural steel installation. Let's keep the crew safe and focused.
+                        </p>
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <span className="stat-value">78°F</span>
+                                <span className="stat-label">Temperature</span>
+                            </div>
+                            <div className="stat-card">
+                                <span className="stat-value">8</span>
+                                <span className="stat-label">Crew Size</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Current Streak</h3>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                            <div style={{fontSize: '48px'}}>🔥</div>
+                            <div>
+                                <div style={{fontSize: '32px', fontWeight: '800', color: '#FF6B35'}}>4 days</div>
+                                <div style={{fontSize: '14px', color: '#666'}}>Keep it going!</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>🔒 How Privacy Works</h3>
+                        <p style={{fontSize: '14px', color: '#666', lineHeight: '1.6'}}>
+                            Your health data is yours alone. Managers only see anonymized crew trends. 
+                            You control who sees your status by adding them as buddies.
+                        </p>
+                    </div>
+
+                    <button className="button" onClick={() => onComplete(5)}>
+                        Start Shift → (+5 Points)
+                    </button>
+                </div>
+            );
+        }
+
+        function WarmUpScreen({ scenario, onComplete }) {
+            const [exercise, setExercise] = useState(0);
+            const exercises = [
+                { name: 'Shoulder Rolls', duration: 10, emoji: '💪' },
+                { name: 'Neck Stretches', duration: 10, emoji: '🙆' },
+                { name: 'Wrist Rotations', duration: 10, emoji: '👐' }
+            ];
+
+            if (exercise >= exercises.length) {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">✅ Warm-Up Complete!</h2>
+                        <p className="screen-subtitle">Great start to the day</p>
+
+                        <div className="card highlight">
+                            <div style={{textAlign: 'center'}}>
+                                <div style={{fontSize: '72px', marginBottom: '16px'}}>🎉</div>
+                                <h3 style={{fontSize: '24px', marginBottom: '8px'}}>+10 Crew Points</h3>
+                                <p style={{fontSize: '14px', color: '#666'}}>
+                                    All 8 crew members participated
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '16px', marginBottom: '12px'}}>Why This Matters</h3>
+                            <p style={{fontSize: '14px', color: '#666', lineHeight: '1.6'}}>
+                                Teams that warm up together have <strong>23% fewer injuries</strong> and 
+                                report feeling more connected throughout the shift.
+                            </p>
+                        </div>
+
+                        <button className="button" onClick={() => onComplete(10)}>
+                            Continue Shift →
+                        </button>
+                    </div>
+                );
+            }
+
+            const currentEx = exercises[exercise];
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🏃 Morning Warm-Up</h2>
+                    <p className="screen-subtitle">Quick crew stretch • 30 seconds total</p>
+
+                    <div className="card highlight">
+                        <div style={{textAlign: 'center'}}>
+                            <div style={{fontSize: '80px', marginBottom: '16px'}}>{currentEx.emoji}</div>
+                            <h3 style={{fontSize: '24px', marginBottom: '8px'}}>{currentEx.name}</h3>
+                            <p style={{fontSize: '16px', color: '#666'}}>
+                                {currentEx.duration} seconds • Follow along with your crew
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style={{textAlign: 'center', margin: '20px 0'}}>
+                        <div style={{fontSize: '14px', color: '#666', marginBottom: '8px'}}>
+                            Exercise {exercise + 1} of {exercises.length}
+                        </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{width: `${((exercise + 1) / exercises.length) * 100}%`}} />
+                        </div>
+                    </div>
+
+                    <button className="button" onClick={() => setExercise(exercise + 1)}>
+                        Next Exercise →
+                    </button>
+                </div>
+            );
+        }
+
+        function StressAlertScreen({ scenario, onComplete }) {
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">⚠️ Stress Alert</h2>
+                    <p className="screen-subtitle">Your watch detected elevated strain</p>
+
+                    <div className="card warning">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>What We Detected</h3>
+                        <div style={{marginBottom: '16px'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                                <span>Heart Rate:</span>
+                                <strong>142 bpm (elevated)</strong>
+                            </div>
+                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                                <span>HRV:</span>
+                                <strong>25 ms (low)</strong>
+                            </div>
+                            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                <span>Duration:</span>
+                                <strong>12 minutes</strong>
+                            </div>
+                        </div>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '14px'}}>
+                            This isn't from lifting—your activity level is low. This pattern suggests mental strain.
+                        </div>
+                    </div>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Quick Reset Available</h3>
+                        <p style={{fontSize: '14px', marginBottom: '12px'}}>
+                            A 90-second breathing exercise can help reset your nervous system. 
+                            No one will know you took it.
+                        </p>
+                        <div style={{fontSize: '13px', color: '#666'}}>
+                            ✓ Private to you<br/>
+                            ✓ Takes 90 seconds<br/>
+                            ✓ Proven to reduce strain markers
+                        </div>
+                    </div>
+
+                    <button className="button" onClick={() => onComplete(5)}>
+                        Take 90-Second Reset (+5 Points)
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Not Right Now
+                    </button>
+                </div>
+            );
+        }
+
+        function BreathingScreen({ scenario, onComplete }) {
+            const [timeLeft, setTimeLeft] = useState(90);
+            const [showSkip, setShowSkip] = useState(false);
+
+            useEffect(() => {
+                // Show skip button after 3 seconds
+                const skipTimer = setTimeout(() => {
+                    setShowSkip(true);
+                }, 3000);
+
+                const interval = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(interval);
+                            setTimeout(() => onComplete(10), 500);
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+
+                return () => {
+                    clearInterval(interval);
+                    clearTimeout(skipTimer);
+                };
+            }, [onComplete]);
+
+            // Calculate breathing phase based on 12-second cycle
+            const cyclePosition = (90 - timeLeft) % 12;
+            let phase;
+            if (cyclePosition < 4) {
+                phase = 'Breathe In';
+            } else if (cyclePosition < 8) {
+                phase = 'Hold';
+            } else {
+                phase = 'Breathe Out';
+            }
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🫁 90-Second Reset</h2>
+                    <p className="screen-subtitle">Follow the breathing pattern</p>
+
+                    <div className="breathing-circle">
+                        <div className="breathing-text">{phase}</div>
+                    </div>
+
+                    <div className="timer">{timeLeft}s</div>
+
+                    <div className="card">
+                        <p style={{fontSize: '14px', textAlign: 'center', color: '#666'}}>
+                            Breathe slowly and deeply. Your watch is monitoring your HRV recovery.
+                        </p>
+                    </div>
+
+                    {showSkip && (
+                        <button className="button outline small" onClick={() => onComplete(10)}>
+                            I'm Done → Skip Ahead
+                        </button>
+                    )}
+
+                    <p style={{fontSize: '12px', color: '#999', marginTop: '16px', textAlign: 'center'}}>
+                        This reset is private. No alerts sent to your crew or manager.
+                    </p>
+                </div>
+            );
+        }
+
+        function BuddyCheckScreen({ scenario, onComplete }) {
+            const [responded, setResponded] = useState(false);
+
+            if (responded) {
+                return (
+                    <div>
+                        <div className="time-badge">{scenario.time}</div>
+                        <h2 className="screen-title">✅ Check-In Sent</h2>
+                        <p className="screen-subtitle">Marcus will see your message</p>
+
+                        <div className="card highlight">
+                            <div style={{textAlign: 'center'}}>
+                                <div style={{fontSize: '64px', marginBottom: '16px'}}>🤝</div>
+                                <h3 style={{fontSize: '20px', marginBottom: '8px'}}>+15 Rescue Points</h3>
+                                <p style={{fontSize: '14px', color: '#666'}}>
+                                    Your buddy check helps keep the crew connected
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{fontSize: '16px', marginBottom: '8px'}}>What Marcus Sees</h3>
+                            <div style={{background: '#f5f5f5', padding: '12px', borderRadius: '8px', fontSize: '14px'}}>
+                                💬 "Hey Marcus, checking in. Everything good?"<br/>
+                                <span style={{fontSize: '12px', color: '#666'}}>— from Alex</span>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <p style={{fontSize: '13px', color: '#666', lineHeight: '1.6'}}>
+                                <strong>How Buddy Checks work:</strong> You add crew members as buddies (they have to accept). 
+                                When their stress markers elevate, you get a prompt to check in. It's peer support, not surveillance.
+                            </p>
+                        </div>
+
+                        <button className="button" onClick={() => onComplete(15)}>
+                            Continue Shift →
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🤝 Buddy Check</h2>
+                    <p className="screen-subtitle">Your buddy might need support</p>
+
+                    <div className="privacy-badge">
+                        🔒 Private between you and Marcus
+                    </div>
+
+                    <div className="card warning">
+                        <div style={{display: 'flex', alignItems: 'center', marginBottom: '16px'}}>
+                            <div className="avatar" style={{marginRight: '12px'}}>MC</div>
+                            <div>
+                                <div style={{fontWeight: '700', fontSize: '18px'}}>Marcus Chen</div>
+                                <div style={{fontSize: '14px', color: '#666'}}>Senior Foreman • Your Buddy</div>
+                            </div>
+                        </div>
+                        <p style={{fontSize: '14px', marginBottom: '16px'}}>
+                            Marcus's stress markers have been elevated for a while. As his buddy, 
+                            you can check in with a simple gesture.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '13px'}}>
+                            <strong>Note:</strong> You won't see his actual health data. CrewCheck just suggests 
+                            you reach out—you decide how.
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>👥 About Buddy Connections</h3>
+                        <p style={{fontSize: '13px', color: '#666', lineHeight: '1.6'}}>
+                            You and Marcus are buddies because you both opted in. You can add/remove 
+                            buddies anytime in Settings. Managers can't see buddy connections or force them.
+                        </p>
+                    </div>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Quick Actions</h3>
+                        <p style={{fontSize: '14px', marginBottom: '16px'}}>
+                            Pick what feels right. All options earn Rescue Points.
+                        </p>
+                    </div>
+
+                    <button className="button" onClick={() => setResponded(true)}>
+                        💬 Send a Check-In Message
+                    </button>
+
+                    <button className="button secondary" onClick={() => setResponded(true)}>
+                        📱 Give Him a Call
+                    </button>
+
+                    <button className="button outline" onClick={onComplete}>
+                        Not Right Now
+                    </button>
+
+                    <p style={{fontSize: '12px', color: '#666', marginTop: '16px', textAlign: 'center'}}>
+                        Crew members help 3.2x more when prompted with buddy checks
+                    </p>
+                </div>
+            );
+        }
+
+        function HeatMapScreen({ scenario, onComplete }) {
+            const heatData = [
+                { initials: 'AR', status: 'green', name: 'Alex (You)' },
+                { initials: 'MC', status: 'yellow', name: 'Marcus' },
+                { initials: 'JH', status: 'green', name: 'Jordan' },
+                { initials: 'TB', status: 'yellow', name: 'Taylor' },
+                { initials: 'SM', status: 'yellow', name: 'Sam' },
+                { initials: 'CO', status: 'green', name: 'Casey' },
+                { initials: 'JW', status: 'yellow', name: 'Jamie' },
+                { initials: 'RK', status: 'green', name: 'Riley' }
+            ];
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">📊 Team Energy Check</h2>
+                    <p className="screen-subtitle">Aggregated crew stress trend</p>
+
+                    <div className="privacy-badge">
+                        🔒 Anonymous unless crew members opt-in
+                    </div>
+
+                    <div className="card warning">
+                        <h3 style={{fontSize: '20px', marginBottom: '12px'}}>⚠️ Team Energy Dipping</h3>
+                        <p style={{marginBottom: '16px'}}>
+                            Aggregate stress levels are trending yellow. Consider a short break 
+                            to help the crew reset before the afternoon push.
+                        </p>
+                        <div style={{background: 'white', padding: '12px', borderRadius: '8px', fontSize: '14px'}}>
+                            <strong>Suggestion:</strong> 10-minute crew break now = better productivity later
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '16px'}}>Crew Status (Anonymized)</h3>
+                        <div className="heat-map">
+                            {heatData.map((member, i) => (
+                                <div key={i} className={`heat-cell heat-${member.status}`}>
+                                    {member.initials}
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{marginTop: '16px', fontSize: '13px'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                                <span>🟢 Green: Doing well</span>
+                                <span>4 members</span>
+                            </div>
+                            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                <span>🟡 Yellow: Elevated stress</span>
+                                <span>4 members</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>🔒 How Privacy Works Here</h3>
+                        <p style={{fontSize: '14px', color: '#666', lineHeight: '1.6'}}>
+                            <strong>What managers see:</strong> Overall crew trends (like this heat map) to decide on breaks.<br/><br/>
+                            <strong>What managers DON'T see:</strong> Individual names, specific health data, or who triggered alerts—unless 
+                            a worker explicitly shares their status.<br/><br/>
+                            <strong>Your control:</strong> You can add crew members as "visible friends" in Settings to 
+                            show them your status. Otherwise, you stay anonymous in the heat map.
+                        </p>
+                    </div>
+
+                    <button className="button" onClick={() => onComplete(5)}>
+                        Suggest Team Break (+ 5 Crew Points)
+                    </button>
+
+                    <button className="button outline" onClick={() => onComplete(0)}>
+                        Continue Without Break
+                    </button>
+                </div>
+            );
+        }
+
+        function SummaryScreen({ scenario, totalPoints }) {
+            const badges = [
+                { icon: '🎯', name: 'First Responder', earned: true },
+                { icon: '🔥', name: 'Steady Hands', earned: true },
+                { icon: '💪', name: '3-Day Streak', earned: false },
+                { icon: '⭐', name: 'Safety MVP', earned: false },
+                { icon: '🏆', name: 'Team Player', earned: true },
+                { icon: '🌟', name: 'Night Owl', earned: false }
+            ];
+
+            return (
+                <div>
+                    <div className="time-badge">{scenario.time}</div>
+                    <h2 className="screen-title">🎉 Shift Complete!</h2>
+                    <p className="screen-subtitle">Great work today, Alex</p>
+
+                    <div className="card highlight">
+                        <h3 style={{fontSize: '20px', textAlign: 'center', marginBottom: '8px'}}>
+                            Total Points Today
+                        </h3>
+                        <div style={{fontSize: '64px', fontWeight: '800', color: '#FF6B35', textAlign: 'center', marginBottom: '8px'}}>
+                            {totalPoints}
+                        </div>
+                        <p style={{textAlign: 'center', fontSize: '14px', color: '#666'}}>
+                            You're ranked #2 on Steel Crew B this week
+                        </p>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <span className="stat-value" style={{fontSize: '28px'}}>2</span>
+                            <span className="stat-label">Resets Completed</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-value" style={{fontSize: '28px'}}>15</span>
+                            <span className="stat-label">Rescue Points</span>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '16px'}}>Badges Earned</h3>
+                        <div className="badges-grid">
+                            {badges.map((badge, i) => (
+                                <div key={i} className={`badge ${badge.earned ? 'earned' : ''}`}>
+                                    <div className="badge-icon">{badge.icon}</div>
+                                    <div className="badge-name">{badge.name}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '18px', marginBottom: '12px'}}>Weekly Progress</h3>
+                        <div className="progress-label">
+                            <span>Crew Challenge</span>
+                            <span>4 / 5 days</span>
+                        </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{width: '80%'}} />
+                        </div>
+                        <p style={{fontSize: '13px', color: '#666', marginTop: '8px'}}>
+                            Complete tomorrow's warm-up to unlock the Coffee Truck reward! ☕
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>💰 Points Marketplace</h3>
+                        <p style={{fontSize: '14px', marginBottom: '12px'}}>
+                            You have <strong>{totalPoints} points</strong> available to redeem:
+                        </p>
+                        <div style={{fontSize: '14px', lineHeight: '1.8'}}>
+                            <div>• Coffee voucher - 50 points</div>
+                            <div>• Safety gloves upgrade - 100 points</div>
+                            <div>• $10 gift card - 200 points</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 style={{fontSize: '16px', marginBottom: '8px'}}>🔒 Your Privacy Today</h3>
+                        <p style={{fontSize: '13px', color: '#666', lineHeight: '1.6'}}>
+                            Today you completed 2 private resets, checked in with 1 buddy, and participated 
+                            in crew activities. Your individual health data stayed private—only aggregate 
+                            trends were visible to management.
+                        </p>
+                    </div>
+
+                    <button className="button">
+                        Browse Rewards →
+                    </button>
+
+                    <button className="button secondary" onClick={() => window.location.reload()}>
+                        🔄 Restart Demo
+                    </button>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
